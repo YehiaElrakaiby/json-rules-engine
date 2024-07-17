@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 /*
  * This is an advanced example demonstrating an event that emits the value
  * of a fact in it's parameters.
@@ -10,18 +10,21 @@
  *   DEBUG=json-rules-engine node ./examples/11-using-facts-in-events.js
  */
 
-require('colors')
-const { Engine, Fact } = require('json-rules-engine')
+require('colors');
+const { Engine, Fact } = require('json-rules-engine');
 
-async function start () {
+async function start() {
   /**
    * Setup a new engine
    */
-  const engine = new Engine([], { replaceFactsInEventParams: true })
+  const engine = new Engine([], { replaceFactsInEventParams: true });
 
   // in-memory "database"
-  let currentHighScore = null
-  const currentHighScoreFact = new Fact('currentHighScore', () => currentHighScore)
+  let currentHighScore = null;
+  const currentHighScoreFact = new Fact(
+    'currentHighScore',
+    () => currentHighScore,
+  );
 
   /**
    * Rule for when you've gotten the high score
@@ -33,26 +36,26 @@ async function start () {
         {
           fact: 'currentHighScore',
           operator: 'equal',
-          value: null
+          value: null,
         },
         {
           fact: 'score',
           operator: 'greaterThan',
           value: {
             fact: 'currentHighScore',
-            path: '$.score'
-          }
-        }
-      ]
+            path: '$.score',
+          },
+        },
+      ],
     },
     event: {
       type: 'highscore',
       params: {
         initials: { fact: 'initials' },
-        score: { fact: 'score' }
-      }
-    }
-  }
+        score: { fact: 'score' },
+      },
+    },
+  };
 
   /**
    * Rule for when the game is over and you don't have the high score
@@ -66,73 +69,73 @@ async function start () {
           operator: 'lessThanInclusive',
           value: {
             fact: 'currentHighScore',
-            path: '$.score'
-          }
-        }
-      ]
+            path: '$.score',
+          },
+        },
+      ],
     },
     event: {
       type: 'gameover',
       params: {
         initials: {
           fact: 'currentHighScore',
-          path: '$.initials'
+          path: '$.initials',
         },
         score: {
           fact: 'currentHighScore',
-          path: '$.score'
-        }
-      }
-    }
-  }
-  engine.addRule(highScoreRule)
-  engine.addRule(gameOverRule)
-  engine.addFact(currentHighScoreFact)
+          path: '$.score',
+        },
+      },
+    },
+  };
+  engine.addRule(highScoreRule);
+  engine.addRule(gameOverRule);
+  engine.addFact(currentHighScoreFact);
 
   /**
    * Register listeners with the engine for rule success
    */
   engine
     .on('success', async ({ params: { initials, score } }) => {
-      console.log(`HIGH SCORE\n${initials} - ${score}`)
+      console.log(`HIGH SCORE\n${initials} - ${score}`);
     })
     .on('success', ({ type, params }) => {
       if (type === 'highscore') {
-        currentHighScore = params
+        currentHighScore = params;
       }
-    })
+    });
 
   let facts = {
     initials: 'DOG',
-    score: 968
-  }
+    score: 968,
+  };
 
   // first run, without a high score
-  await engine.run(facts)
+  await engine.run(facts);
 
-  console.log('\n')
+  console.log('\n');
 
   // new player
   facts = {
     initials: 'AAA',
-    score: 500
-  }
+    score: 500,
+  };
 
   // new player hasn't gotten the high score yet
-  await engine.run(facts)
+  await engine.run(facts);
 
-  console.log('\n')
+  console.log('\n');
 
   facts = {
     initials: 'AAA',
-    score: 1000
-  }
+    score: 1000,
+  };
 
   // second run, with a high score
-  await engine.run(facts)
+  await engine.run(facts);
 }
 
-start()
+start();
 
 /*
  * OUTPUT:
